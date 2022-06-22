@@ -1,35 +1,21 @@
-{ "head" : {
-  "type" : "header",
-  "description" : "Window Buttons Settings"
-}, "buttons-style": {
-   "type": "entry", 
-    "description": "Window Buttons Style  (default: title:icon:minimize:maximize:close)", 
-    "default": "minimize:maximize:close"
-}, "buttons-theme" : {
-    "type": "combobox",
-    "default" : "default",
-    "description" : "Buttons Theme  (Needs Restart Cinnamon)",
-    "options" : {
-        "Default" : "default",
-        "Ambiance" : "Ambiance",
-        "Ambiance-Blue" : "Ambiance-Blue",
-        "Mac-OS-X" : "Mac-OS-X",
-        "Mint-X" : "Mint-X",
-        "Radiance" : "Radiance",
-        "UniMetro" : "UniMetro",
-        "UniMetro-Black" : "UniMetro-Black",
-        "Zukitwo" : "Zukitwo",
-        "Zukitwo-Dark" : "Zukitwo-Dark",
-        "Vimix" : "Vimix"
-    },
-    "tooltip" : "Please select a theme for window buttons"
-}, "on-desktop-shutdown" : {
-      "type" : "checkbox",
-      "default" : false,
-      "description": "On desktop show shutdown menu when click close button"
-}, "only-maximized" : {
-    "type" : "checkbox",
-    "default" : false,
-    "description": "Show applet (active buttons-title-icon on this instance) only active window maximized"
-}
+{	"head" : {
+	"type" : "header",
+ 	"description" : "Window Controls Applet Configuration"
+  	}, "button-layout": {
+		"type": "entry", 
+		"description": "Button Layout (default: minimize:maximize:close)", 
+		"default": "minimize:maximize:close"
+	}, "button-theme" : {
+		"type": "entry",
+		"default" : "default",
+		"description" : "Button Theme (Restart the Window Manager with Ctrl+Alt+Esc to apply changes. Only required to be set on first instance.)"
+	}, "only-maximized" : {
+		"type" : "checkbox",
+		"default" : false,
+		"description": "Show window controls only when an active window maximized"
+	}, "verbose-log": {
+		"type": "checkbox", 
+		"default" : false,
+		"description": "Toggle logging visibility to all. (Only for debugging purposes)"
+	}
 }

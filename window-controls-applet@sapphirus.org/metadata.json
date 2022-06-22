@@ -1,9 +1,11 @@
 {
-    "uuid": "window-buttons-fixed@sapphirus.org", 
+    "uuid": "window-controls-applet@sapphirus.org",
+    "author": "Sapphirus", 
     "max-instances": "15", 
     "dangerous": false, 
-    "description": "You can control windows with this applet", 
-    "name": "Window Buttons", 
-    "icon": "applications-other", 
-    "last-edited": "1395875196"
+    "description": "An applet which provides window controls. Supports multi-display and multi-panel configurations.", 
+    "name": "Window Controls Applet", 
+    "icon": "applications-other",
+    "version": "1.1.2",
+    "last-edited": 1655893302
 }
