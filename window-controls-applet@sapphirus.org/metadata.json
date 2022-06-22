@@ -1,0 +1,9 @@
+{
+    "uuid": "window-buttons-fixed@sapphirus.org", 
+    "max-instances": "15", 
+    "dangerous": false, 
+    "description": "You can control windows with this applet", 
+    "name": "Window Buttons", 
+    "icon": "applications-other", 
+    "last-edited": "1395875196"
+}
