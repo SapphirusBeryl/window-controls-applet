@@ -1,18 +1,19 @@
-// This program is free software:
-//
-//    You can redistribute it and/or modify it under the terms of the
-//    GNU General Public License as published by the Free Software
-//    Foundation, either version 3 of the License, or (at your option)
-//    any later version.
-//
-//    This program is distributed in the hope that it will be useful,
-//    but WITHOUT ANY WARRANTY; without even the implied warranty of
-//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-//    GNU General Public License for more details.
-//
-//    You should have received a copy of the GNU General Public License
-//    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-//
+/* 	Window Controls Applet for the Cinnamon Desktop Environment
+ * 	Copyright (C) 2017-2022  Xavier (sapphirus@azorium.net)
+ *
+ * 	This program is free software: you can redistribute it and/or modify
+ * 	it under the terms of the GNU General Public License as published by
+ * 	the Free Software Foundation, either version 3 of the License, or
+ * 	(at your option) any later version.
+ *
+ * 	This program is distributed in the hope that it will be useful,
+ *	but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * 	GNU General Public License for more details.
+ *
+ * 	You should have received a copy of the GNU General Public License
+ * 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
 const Window = imports.ui.windowManager;
 const PanelManager = imports.ui.panel;
@@ -29,6 +30,10 @@ const Util = imports.misc.util;
 const GLib = imports.gi.GLib;
 const Gdk = imports.gi.Gdk;
 const GnomeSession = imports.misc.gnomeSession;
+const WindowTracker = imports.gi.Cinnamon.WindowTracker;
+
+const wt = WindowTracker.get_default();
+const wpm = global.display.get_workspace_manager();
 
 
 function WindowButtonApplet(orientation,metadata, panelHeight, instance_id) {
@@ -45,7 +50,7 @@ WindowButtonApplet.prototype = {
 		this.instance_id=instance_id;
 		this.appletPath=metadata.path;                         
 		try {
-			this.init_settings();
+			this.initialize_settings();
 			this.initialize_events();
 			this.initialize_buttons();
         		this.on_panel_edit_mode_changed();
@@ -61,12 +66,13 @@ WindowButtonApplet.prototype = {
 		Main.themeManager.connect("theme-set", Lang.bind(this, this.loadTheme));
 		tracker.connect('notify::focus-app', Lang.bind(this, this._windowChange));
                 global.settings.connect('changed::panel-edit-mode', Lang.bind(this, this.on_panel_edit_mode_changed));
-                global.window_manager.connect('maximize', Lang.bind(this, this._windowChange));
-                global.window_manager.connect('unmaximize', Lang.bind(this, this._windowChange));
+                global.window_manager.connect('size-changed', Lang.bind(this, this._windowChange));
                	global.window_manager.connect('minimize', Lang.bind(this, this._windowChange));
-		global.window_manager.connect('destroy', Lang.bind(this, this._destroy));
-		global.screen.connect('window-entered-monitor', Lang.bind(this, this._windowChange));
-		global.screen.connect('window-left-monitor', Lang.bind(this, this._windowChange));
+		global.window_manager.connect('destroy', Lang.bind(this, this._windowChange));
+		global.display.connect('window-entered-monitor', Lang.bind(this, this._windowChange));
+		//global.display.connect('window-left-monitor', Lang.bind(this, this._windowChange));
+		global.display.connect('showing-desktop-changed', Lang.bind(this, this._windowChange));
+
 
 	},
 	initialize_buttons: function() {
@@ -78,13 +84,17 @@ WindowButtonApplet.prototype = {
                 this.createButtons(this.buttons_style);
 		
         },
-	init_settings: function() {
+	initialize_settings: function() {
 		this.settings = new Settings.AppletSettings(this, "window-buttons-fixed@sapphirus.org", this.instance_id);
-                this.settings.bindProperty(Settings.BindingDirection.IN,"buttons-style","buttons_style",this.on_settings_changed,null);
-                this.settings.bindProperty(Settings.BindingDirection.IN,"buttons-theme","buttonsTheme",null,null);
-                this.settings.bindProperty(Settings.BindingDirection.IN,"only-maximized", "onlyMaximized",this.on_settings_changed,null);
-                this.settings.bindProperty(Settings.BindingDirection.IN,"on-desktop-shutdown", "onDesktopShutdown",this.on_settings_changed,null);
+                this.settings.bindProperty(Settings.BindingDirection.IN,"buttons-style","buttons_style",this.bind_settings,null);
+                this.settings.bindProperty(Settings.BindingDirection.IN,"buttons-theme","buttons_theme", this.bind_settings,null);
+                this.settings.bindProperty(Settings.BindingDirection.IN,"only-maximized", "onlyMaximized", this.bind_settings,null);
+                this.settings.bindProperty(Settings.BindingDirection.IN,"on-desktop-shutdown", "onDesktopShutdown", this.bind_settings,null);
 	},
+	bind_settings: function() {
+		this.actor.destroy_all_children(); 
+		this.initialize_buttons();
+    	},
         on_panel_edit_mode_changed: function() {
                 let reactive = !global.settings.get_boolean('panel-edit-mode');
                 let b=this.buttons_style.split(':');
@@ -100,8 +110,8 @@ WindowButtonApplet.prototype = {
 	loadTheme: function(){
 		this.actor.set_style_class_name("window-buttons");
 		let theme = St.ThemeContext.get_for_stage(global.stage).get_theme();
-		theme.load_stylesheet(this.getCssPath(this.buttonsTheme));
-		this.oldTheme=this.buttonsTheme;
+		let theme_path = this.getCssPath(this.buttons_theme);
+		theme.load_stylesheet(theme_path);
 	},
 	createButtons: function(buttonsStyle) {
      		buttonsStyle=buttonsStyle.split(':');
@@ -128,16 +138,15 @@ WindowButtonApplet.prototype = {
 	},
       
 	minimizeWindow: function() {
-		let activeWindow = global.display.focus_window;
-		let tracker = Cinnamon.WindowTracker.get_default();
-		let app = tracker.get_window_app(activeWindow);
-	 	if (app) { 
-		     activeWindow.minimize();   
-        	}
+		let activeWindow = this.getActiveWindow();	
+		let app = wt.get_window_app(activeWindow);
+		if(!activeWindow || !app) 
+			return;
+		activeWindow.minimize();
    	},
     
 	maximizeButton: function () {    
-		this.button['maximize'] = new St.Button({ name: 'windowButton', style_class: 'maximize window-button', reactive: true });
+		this.button['maximize'] = new St.Button({ name: 'windowButton'+this.instance_id, style_class: 'maximize window-button', reactive: true });
 		this.actor.add(this.button['maximize']);
             	
 		this.button['maximize'].connect('button-press-event', Lang.bind(this,function(actor,event){
@@ -154,13 +163,12 @@ WindowButtonApplet.prototype = {
 	},
        
 	maximizeWindow: function() {
-		let activeWindow = global.display.focus_window;
- 		let tracker = Cinnamon.WindowTracker.get_default();
-		let app = tracker.get_window_app(activeWindow);
-		if(!activeWindow && !app){ 
+		let activeWindow = this.getActiveWindow();
+		let app = wt.get_window_app(activeWindow);
+		if(!activeWindow || !app) 
 			return;
-		}
-        	if (activeWindow.get_maximized()) {
+ 
+		if (activeWindow.get_maximized()) {
             		activeWindow.unmaximize(3);
         	}  else {
             		activeWindow.maximize(3);
@@ -182,30 +190,53 @@ WindowButtonApplet.prototype = {
 		}));
 	},
 	closeWindow: function() {
-		let activeWindow = global.display.focus_window;
-		let tracker = Cinnamon.WindowTracker.get_default();
-       		let app = tracker.get_window_app(activeWindow);
-        	if (!app) {
+		let activeWindow = this.getActiveWindow();
+		let app = wt.get_window_app(activeWindow);
+		if(!activeWindow || !app) 
 			return;
-		}
+	
 		activeWindow.delete(global.get_current_time());		
 	},
-	_windowChange: function(destroy=false) {
-	    	if(this.onlyMaximized==true) {
-			let w = global.display.focus_window;
-                	let windowType = (w.get_window_type() == Meta.WindowType.DESKTOP);
+
+	getActiveWindow: function() {
+		let workspace = wpm.get_active_workspace();
+		let windows = workspace.list_windows();
+		for (var i = 0; i < windows.length; i++) {
+			let w = windows[i];
 			let thisMonitor = (w.get_monitor() == this.panel.monitorIndex);
-			let toggle = (w.get_maximized() && w.has_focus() && !w.minimized && thisMonitor && !windowType && w);
-			this.toggleButtons(toggle);
+			if(!thisMonitor)
+				continue;
+			if(((w.get_maximized() === Meta.MaximizeFlags.BOTH) && (w.get_window_type() != Meta.WindowType.DESKTOP) && !w.minimized && thisMonitor))
+				return w;	
 		}
+		return false;                      
+	},
+	_windowChange: function(destroy=false) {
+	    	if(!this.onlyMaximized)
+			return;
+
+		let workspace = wpm.get_active_workspace();
+		let windows = workspace.list_windows();
+		for (var i = 0; i < windows.length; i++) {
+			let w = windows[i];
+			let thisMonitor = (w.get_monitor() == this.panel.monitorIndex);
+			if(!thisMonitor)
+				continue;
+			let toggle = ((w.get_maximized() === Meta.MaximizeFlags.BOTH) && (w.get_window_type() != Meta.WindowType.DESKTOP) && !w.minimized && thisMonitor);	
+			this.toggleButtons(toggle);
+			if(toggle) break;
+		}
+
+	/*	let w = global.display.focus_window;
+                let windowType = (w.get_window_type() == Meta.WindowType.DESKTOP);
+		let thisMonitor = (w.get_monitor() == this.panel.monitorIndex);
+		let toggle = ((w.get_maximized() === Meta.MaximizeFlags.BOTH) !w.minimized && thisMonitor && !windowType);
+		this.toggleButtons(toggle); */
+
 	}, 
 	_destroy: function() {
 		this.toggleButtons(false);
 	},
-	on_settings_changed: function() {
-        	this.actor.destroy_all_children();
-       		this.initialize_buttons();
-    	},
 	checkButton: function(arr, obj) {
 		for(var i=0; i<arr.length; i++) {
 			if (arr[i] == obj){ 
