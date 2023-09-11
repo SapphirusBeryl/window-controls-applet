@@ -1,0 +1,62 @@
+/* 
+ * Arc Theme CSS for Window Controls Applet
+ *
+ * Copyright (C) 2022  Xavier M (sapphirus@azorium.net) 
+ * License: GPL-3.0-only
+ */
+
+/* The style for each individual window button */
+.window-button {
+    width: 24px;
+    height: 20px;
+    padding-left: 1px;
+    padding-right: 1px;
+}
+
+
+/* Style for the minimize button */
+.minimize {
+    background-image: url('min.svg');
+    margin-left: 2px;
+    margin-right: 4px;
+}
+
+.minimize:hover {
+    background-image: url('min_hover.svg');
+}
+
+.minimize:active {
+    background-image: url('min_active.svg');
+}
+
+
+/* Style for the maximize button */
+.maximize {
+    background-image: url('max.svg');
+    margin-left: 2px;
+    margin-right: 2px;
+}
+
+.maximize:hover {
+    background-image: url('max_hover.svg');
+}
+
+.maximize:active {
+    background-image: url('max_active.svg');
+}
+
+/* Style for the close button */
+.close {
+    background-image: url('close.svg');
+    padding-right: 6px;
+    margin-left: 2px;
+    margin-right: 0px;
+}
+
+.close:hover {
+    background-image: url('close_hover.svg');
+}
+
+.close:active {
+    background-image: url('close_active.svg');
+}
