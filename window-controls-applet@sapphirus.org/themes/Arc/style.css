@@ -13,7 +13,6 @@
     padding-right: 1px;
 }
 
-
 /* Style for the minimize button */
 .minimize {
     background-image: url('min.svg');
@@ -28,7 +27,6 @@
 .minimize:active {
     background-image: url('min_active.svg');
 }
-
 
 /* Style for the maximize button */
 .maximize {
