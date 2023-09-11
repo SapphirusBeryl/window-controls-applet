@@ -1,6 +1,6 @@
-# Window Button Applet
+# Window Controls Applet
 
-The Window Button Applet provides themable window controls for the Cinnamon Desktop Environment.
+The Window Controls Applet provides themable window controls for the Cinnamon Desktop Environment.
 
 A complete rewrite and rework of the predecessing applet was undertaken, which enables multiple instances across panels on multiple displays. At present, version 1.1.3 is compatible with Cinnamon 5.4 and later.
  
