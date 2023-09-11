@@ -138,9 +138,9 @@ class WindowControlApplet extends Applet.Applet {
 	_initialize_events() {
 		Main.themeManager.connect("theme-set", Lang.bind(this, this._loadTheme));
 		WindowTracker.get_default().connect('notify::focus-app', Lang.bind(this, this._windowChange));
-                global.settings.connect('changed::panel-edit-mode', Lang.bind(this, this._on_panel_edit_mode_changed));
-                global.window_manager.connect('size-changed', Lang.bind(this, this._windowChange));
-               	global.window_manager.connect('minimize', Lang.bind(this, this._windowChange));
+		global.settings.connect('changed::panel-edit-mode', Lang.bind(this, this._on_panel_edit_mode_changed));
+		global.window_manager.connect('size-changed', Lang.bind(this, this._windowChange));
+		global.window_manager.connect('minimize', Lang.bind(this, this._windowChange));
 		global.window_manager.connect('destroy', Lang.bind(this, this._windowChange));
 		global.display.connect('window-entered-monitor', Lang.bind(this, this._windowChange));
 		global.display.connect('showing-desktop-changed', Lang.bind(this, this._windowChange));
